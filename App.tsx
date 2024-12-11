@@ -19,6 +19,7 @@ function App(): JSX.Element {
 
   let startListener:EmitterSubscription;
   let stopListener:EmitterSubscription;
+  let loginListener:EmitterSubscription;
 
   useEffect(()=>{
     initCopilot()
@@ -35,26 +36,11 @@ function App(): JSX.Element {
 
       startListener.remove()
       stopListener.remove()
+      loginListener.remove()
     };
   },[])
 
   const initCopilot = async() => {
-
-    // License activation
-    try {
-      await LicenseListener.setAMSLoginInfo("", "");
-      console.log('dileep License activated');
-    } catch (error) {
-      console.error('dileep License activation failed', error);
-    }
-
-    // Start CoPilot
-    try {
-      await CopilotStartupMgr.bindCoPilotService();
-      console.log('dileep bindCoPilotService done');
-    } catch (error) {
-      console.error('dileep bindCoPilotService failed', error);
-    }
 
     startListener = DeviceEventEmitter.addListener('onCPStartup', ()=>{
       console.log("dileep onCPStartup got called")
@@ -64,6 +50,28 @@ function App(): JSX.Element {
       console.log("dileep onCPShutdown got called")
     });
 
+    loginListener = DeviceEventEmitter.addListener('onLicenseMgtLogin', ()=>{
+      console.log("dileep onLicenseMgtLogin got called")
+    });
+
+    // License activation
+    try {
+      await LicenseListener.setAMSLoginInfo("10092", "iSFUMBA");
+      console.log('dileep License activated');
+    } catch (error) {
+      console.error('dileep License activation failed', error);
+    }
+
+
+    setTimeout(() => {
+    // Start CoPilot
+      try {
+        CopilotStartupMgr.bindCoPilotService();
+        console.log('dileep bindCoPilotService done');
+      } catch (error) {
+        console.error('dileep bindCoPilotService failed', error);
+      }
+    }, 7000); // app crashes even if the timeout is set as 10 secs
   }
 
   return (
